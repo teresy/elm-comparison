@@ -1,15 +1,3 @@
-module Client.Signup.Views (..) where
-
-import Html exposing (form, label, input, text, div, a, select, option, Html)
-import Html.Attributes exposing (for, type', name, action, method, enctype, value, href)
-import Html.Tags exposing (style, stylesheetLink)
-import Shared.User exposing (User)
-import Shared.Test exposing (TestConfig)
-import Shared.Routes exposing (routes, assets)
-import Client.Components exposing (..)
-import Client.Styles exposing (..)
-
-
 signUpForTakeHomeView : TestConfig -> Html
 signUpForTakeHomeView testConfig =
     form

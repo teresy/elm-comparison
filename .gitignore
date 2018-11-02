@@ -17,3 +17,4 @@ map/graphql/elm-stuff/
 node_modules/
 npm-debug.log
 package-lock.json
+property-access/take-home/LintConfig.elm

@@ -19,10 +19,8 @@ importsString : List String -> List String -> List Type.Field -> String
 importsString apiSubmodule importingFrom typeRefs =
     typeRefs
         |> allRefs
-        |> importsWithoutSelf apiSubmodule importingFrom
         |> List.map toModuleName
         |> List.map toImportString
-        |> String.join "\n"
 
 
 importsWithoutSelf : List String -> List String -> List TypeReference -> List (List String)

@@ -1,0 +1,139 @@
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$comparisonOperators = _elm_lang$core$Set$fromList(
+	{
+		ctor: '::',
+		_0: {
+			ctor: '::',
+			_0: '==',
+			_1: {ctor: '[]'}
+		},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '::',
+				_0: '/=',
+				_1: {ctor: '[]'}
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '::',
+					_0: '<',
+					_1: {ctor: '[]'}
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '::',
+						_0: '<=',
+						_1: {ctor: '[]'}
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '::',
+							_0: '>',
+							_1: {ctor: '[]'}
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '::',
+								_0: '>=',
+								_1: {ctor: '[]'}
+							},
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStaticVariable = function (names) {
+	var _p0 = names;
+	_v0_2:
+	do {
+		if ((_p0.ctor === '::') && (_p0._1.ctor === '[]')) {
+			switch (_p0._0) {
+				case 'True':
+					return true;
+				case 'False':
+					return true;
+				default:
+					break _v0_2;
+			}
+		} else {
+			break _v0_2;
+		}
+	} while(false);
+	return false;
+};
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStatic = function (expr) {
+	var _p1 = expr;
+	_v1_5:
+	do {
+		switch (_p1.ctor) {
+			case 'Variable':
+				return _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStaticVariable(_p1._0) ? true : false;
+			case 'Integer':
+				return true;
+			case 'Float':
+				return true;
+			case 'String':
+				return true;
+			case 'BinOp':
+				if (_p1._0.ctor === 'Variable') {
+					var _p3 = _p1._2;
+					var _p2 = _p1._1;
+					return A2(_elm_lang$core$Set$member, _p1._0._0, _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$comparisonOperators) && (_elm_lang$core$Native_Utils.eq(_p2, _p3) || (_jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStatic(_p2) && _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStatic(_p3)));
+				} else {
+					break _v1_5;
+				}
+			default:
+				break _v1_5;
+		}
+	} while(false);
+	return false;
+};
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$error = A2(_jfmengels$elm_lint$Lint_Types$LintError, 'NoConstantCondition', 'Useless condition: It will always evaluate to the same value');
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$expressionFn = F2(
+	function (ctx, node) {
+		var _p4 = node;
+		if ((_p4.ctor === 'Enter') && (_p4._0.ctor === 'If')) {
+			return _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$isStatic(_p4._0._0) ? {
+				ctor: '_Tuple2',
+				_0: {
+					ctor: '::',
+					_0: _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$error,
+					_1: {ctor: '[]'}
+				},
+				_1: ctx
+			} : {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$Context = {};
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint$doNothing,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$expressionFn,
+	moduleEndFn: function (ctx) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	},
+	initialContext: _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$Context
+};
+var _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_NoConstantCondition$implementation);
+};

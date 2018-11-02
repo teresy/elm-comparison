@@ -1,0 +1,61 @@
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$error = function (name) {
+	return A2(
+		_jfmengels$elm_lint$Lint_Types$LintError,
+		'NoImportingEverything',
+		A2(_elm_lang$core$Basics_ops['++'], 'Do not expose everything from ', name));
+};
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$statementFn = F2(
+	function (ctx, node) {
+		var _p0 = node;
+		if ((((_p0.ctor === 'Enter') && (_p0._0.ctor === 'ImportStatement')) && (_p0._0._2.ctor === 'Just')) && (_p0._0._2._0.ctor === 'AllExport')) {
+			var name = A2(_elm_lang$core$String$join, '.', _p0._0._0);
+			return A2(_elm_lang$core$Set$member, name, ctx.exceptions) ? {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			} : {
+				ctor: '_Tuple2',
+				_0: {
+					ctor: '::',
+					_0: _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$error(name),
+					_1: {ctor: '[]'}
+				},
+				_1: ctx
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$Context = function (a) {
+	return {exceptions: a};
+};
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$implementation = function (config) {
+	return {
+		statementFn: _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$statementFn,
+		typeFn: _jfmengels$elm_lint$Lint$doNothing,
+		expressionFn: _jfmengels$elm_lint$Lint$doNothing,
+		moduleEndFn: function (ctx) {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		},
+		initialContext: _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$Context(
+			_elm_lang$core$Set$fromList(config.exceptions))
+	};
+};
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$rule = F2(
+	function (exceptions, input) {
+		return A2(
+			_jfmengels$elm_lint$Lint$lint,
+			input,
+			_jfmengels$elm_lint$Lint_Rules_NoImportingEverything$implementation(exceptions));
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoImportingEverything$Configuration = function (a) {
+	return {exceptions: a};
+};

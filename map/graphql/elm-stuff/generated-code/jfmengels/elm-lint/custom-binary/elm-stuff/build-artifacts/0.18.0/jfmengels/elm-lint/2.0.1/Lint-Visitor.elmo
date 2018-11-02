@@ -1,0 +1,180 @@
+var _jfmengels$elm_lint$Lint_Visitor$typeToVisitors = function (node) {
+	return {ctor: '[]'};
+};
+var _jfmengels$elm_lint$Lint_Visitor$statementVisitor = F3(
+	function (node, rule, context) {
+		return A2(rule.statementFn, context, node);
+	});
+var _jfmengels$elm_lint$Lint_Visitor$expressionVisitor = F3(
+	function (node, rule, context) {
+		return A2(rule.expressionFn, context, node);
+	});
+var _jfmengels$elm_lint$Lint_Visitor$moduleVisitor = F2(
+	function (rule, context) {
+		return rule.moduleEndFn(context);
+	});
+var _jfmengels$elm_lint$Lint_Visitor$createExitAndEnterWithChildren = F3(
+	function (toVisitor, node, children) {
+		return _elm_lang$core$List$concat(
+			{
+				ctor: '::',
+				_0: {
+					ctor: '::',
+					_0: toVisitor(
+						_jfmengels$elm_lint$Lint_Types$Enter(node)),
+					_1: {ctor: '[]'}
+				},
+				_1: {
+					ctor: '::',
+					_0: children,
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '::',
+							_0: toVisitor(
+								_jfmengels$elm_lint$Lint_Types$Exit(node)),
+							_1: {ctor: '[]'}
+						},
+						_1: {ctor: '[]'}
+					}
+				}
+			});
+	});
+var _jfmengels$elm_lint$Lint_Visitor$expressionToVisitors = function (node) {
+	var children = function () {
+		var _p0 = node;
+		switch (_p0.ctor) {
+			case 'Application':
+				return {
+					ctor: '::',
+					_0: _p0._0,
+					_1: {
+						ctor: '::',
+						_0: _p0._1,
+						_1: {ctor: '[]'}
+					}
+				};
+			case 'Access':
+				return {
+					ctor: '::',
+					_0: _p0._0,
+					_1: {ctor: '[]'}
+				};
+			case 'Variable':
+				return {ctor: '[]'};
+			case 'String':
+				return {ctor: '[]'};
+			case 'Character':
+				return {ctor: '[]'};
+			case 'Integer':
+				return {ctor: '[]'};
+			case 'Float':
+				return {ctor: '[]'};
+			case 'List':
+				return _p0._0;
+			case 'Record':
+				return A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p0._0);
+			case 'RecordUpdate':
+				return A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p0._1);
+			case 'BinOp':
+				return {
+					ctor: '::',
+					_0: _p0._0,
+					_1: {
+						ctor: '::',
+						_0: _p0._1,
+						_1: {
+							ctor: '::',
+							_0: _p0._2,
+							_1: {ctor: '[]'}
+						}
+					}
+				};
+			case 'If':
+				return {
+					ctor: '::',
+					_0: _p0._0,
+					_1: {
+						ctor: '::',
+						_0: _p0._1,
+						_1: {
+							ctor: '::',
+							_0: _p0._2,
+							_1: {ctor: '[]'}
+						}
+					}
+				};
+			case 'Let':
+				return A2(
+					_elm_lang$core$List$append,
+					A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$second, _p0._0),
+					{
+						ctor: '::',
+						_0: _p0._1,
+						_1: {ctor: '[]'}
+					});
+			case 'Case':
+				return A2(
+					_elm_lang$core$List$append,
+					{
+						ctor: '::',
+						_0: _p0._0,
+						_1: {ctor: '[]'}
+					},
+					A2(
+						_elm_lang$core$List$concatMap,
+						function (_p1) {
+							var _p2 = _p1;
+							return {
+								ctor: '::',
+								_0: _p2._0,
+								_1: {
+									ctor: '::',
+									_0: _p2._1,
+									_1: {ctor: '[]'}
+								}
+							};
+						},
+						_p0._1));
+			case 'Lambda':
+				return {
+					ctor: '::',
+					_0: _p0._1,
+					_1: {ctor: '[]'}
+				};
+			case 'Tuple':
+				return _p0._0;
+			default:
+				return {ctor: '[]'};
+		}
+	}();
+	var childrenVisitors = A2(_elm_lang$core$List$concatMap, _jfmengels$elm_lint$Lint_Visitor$expressionToVisitors, children);
+	return A3(_jfmengels$elm_lint$Lint_Visitor$createExitAndEnterWithChildren, _jfmengels$elm_lint$Lint_Visitor$expressionVisitor, node, childrenVisitors);
+};
+var _jfmengels$elm_lint$Lint_Visitor$statementToVisitors = function (node) {
+	var childrenVisitors = function () {
+		var _p3 = node;
+		switch (_p3.ctor) {
+			case 'FunctionTypeDeclaration':
+				return _jfmengels$elm_lint$Lint_Visitor$typeToVisitors(_p3._1);
+			case 'FunctionDeclaration':
+				return _jfmengels$elm_lint$Lint_Visitor$expressionToVisitors(_p3._2);
+			default:
+				return {ctor: '[]'};
+		}
+	}();
+	return A3(_jfmengels$elm_lint$Lint_Visitor$createExitAndEnterWithChildren, _jfmengels$elm_lint$Lint_Visitor$statementVisitor, node, childrenVisitors);
+};
+var _jfmengels$elm_lint$Lint_Visitor$transformStatementsIntoVisitors = function (statements) {
+	return function (allVisitors) {
+		return A2(
+			_elm_lang$core$List$append,
+			allVisitors,
+			{
+				ctor: '::',
+				_0: _jfmengels$elm_lint$Lint_Visitor$moduleVisitor,
+				_1: {ctor: '[]'}
+			});
+	}(
+		A2(_elm_lang$core$List$concatMap, _jfmengels$elm_lint$Lint_Visitor$statementToVisitors, statements));
+};

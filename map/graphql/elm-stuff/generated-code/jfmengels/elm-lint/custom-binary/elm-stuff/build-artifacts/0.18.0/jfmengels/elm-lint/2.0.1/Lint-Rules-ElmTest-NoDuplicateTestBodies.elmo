@@ -1,0 +1,205 @@
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$computeAlias = _elm_lang$core$Maybe$withDefault('Test');
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$extractImported = function (exportSet) {
+	var _p0 = exportSet;
+	switch (_p0.ctor) {
+		case 'AllExport':
+			return {
+				ctor: '::',
+				_0: 'test',
+				_1: {ctor: '[]'}
+			};
+		case 'SubsetExport':
+			return A2(_elm_lang$core$List$concatMap, _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$extractImported, _p0._0);
+		case 'FunctionExport':
+			var _p1 = _p0._0;
+			return _elm_lang$core$Native_Utils.eq(_p1, 'test') ? {
+				ctor: '::',
+				_0: _p1,
+				_1: {ctor: '[]'}
+			} : {ctor: '[]'};
+		default:
+			return {ctor: '[]'};
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$statementFn = F2(
+	function (ctx, node) {
+		var _p2 = node;
+		if (((((_p2.ctor === 'Enter') && (_p2._0.ctor === 'ImportStatement')) && (_p2._0._0.ctor === '::')) && (_p2._0._0._0 === 'Test')) && (_p2._0._0._1.ctor === '[]')) {
+			var moduleFnAccess = A2(
+				_elm_lang$core$Basics_ops['++'],
+				_jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$computeAlias(_p2._0._1),
+				'.test');
+			var _p3 = _p2._0._2;
+			if (_p3.ctor === 'Nothing') {
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '[]'},
+					_1: {
+						availableTestAliases: {
+							ctor: '::',
+							_0: moduleFnAccess,
+							_1: {ctor: '[]'}
+						}
+					}
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: {ctor: '[]'},
+					_1: {
+						availableTestAliases: A2(
+							_elm_lang$core$Basics_ops['++'],
+							{
+								ctor: '::',
+								_0: moduleFnAccess,
+								_1: {ctor: '[]'}
+							},
+							_jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$extractImported(_p3._0))
+					}
+				};
+			}
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$isTestFunctionCall = F2(
+	function (availableTestAliases, expr) {
+		var _p4 = expr;
+		_v3_2:
+		do {
+			switch (_p4.ctor) {
+				case 'Variable':
+					return A2(
+						_elm_lang$core$List$member,
+						A2(_elm_lang$core$String$join, '.', _p4._0),
+						availableTestAliases);
+				case 'Access':
+					if (_p4._0.ctor === 'Variable') {
+						return A2(
+							_elm_lang$core$List$member,
+							A2(
+								_elm_lang$core$String$join,
+								'.',
+								A2(_elm_lang$core$Basics_ops['++'], _p4._0._0, _p4._1)),
+							availableTestAliases);
+					} else {
+						break _v3_2;
+					}
+				default:
+					break _v3_2;
+			}
+		} while(false);
+		return false;
+	});
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$filterTests = F2(
+	function (availableTestAliases, listItems) {
+		return A2(
+			_elm_lang$core$List$concatMap,
+			function (item) {
+				var _p5 = item;
+				if (((((((_p5.ctor === 'BinOp') && (_p5._0.ctor === 'Variable')) && (_p5._0._0.ctor === '::')) && (_p5._0._0._0 === '<|')) && (_p5._0._0._1.ctor === '[]')) && (_p5._1.ctor === 'Application')) && (_p5._1._1.ctor === 'String')) {
+					return A2(_jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$isTestFunctionCall, availableTestAliases, _p5._1._0) ? {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: _p5._1._1._0, _1: _p5._2},
+						_1: {ctor: '[]'}
+					} : {ctor: '[]'};
+				} else {
+					return {ctor: '[]'};
+				}
+			},
+			listItems);
+	});
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$error = function (_p6) {
+	var _p7 = _p6;
+	return A2(
+		_jfmengels$elm_lint$Lint_Types$LintError,
+		'ElmTest.NoDuplicateTestBodies',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Test `',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_p7._0,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'` has the same body as test `',
+					A2(_elm_lang$core$Basics_ops['++'], _p7._1, '`')))));
+};
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$expressionFn = F2(
+	function (ctx, node) {
+		var _p8 = node;
+		if ((_p8.ctor === 'Enter') && (_p8._0.ctor === 'List')) {
+			var tests = A2(_jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$filterTests, ctx.availableTestAliases, _p8._0._0);
+			var redundantTests = A3(
+				_elm_lang$core$List$foldl,
+				F2(
+					function (_p10, _p9) {
+						var _p11 = _p10;
+						var _p16 = _p11._0;
+						var _p12 = _p9;
+						var _p15 = _p12.redundant;
+						var _p14 = _p12.dict;
+						var testBodyAsString = _elm_lang$core$Basics$toString(_p11._1);
+						var existingTest = A2(_elm_lang$core$Dict$get, testBodyAsString, _p14);
+						var _p13 = existingTest;
+						if (_p13.ctor === 'Nothing') {
+							return {
+								dict: A3(_elm_lang$core$Dict$insert, testBodyAsString, _p16, _p14),
+								redundant: _p15
+							};
+						} else {
+							return {
+								dict: _p14,
+								redundant: A2(
+									_elm_lang$core$Basics_ops['++'],
+									_p15,
+									{
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: _p16, _1: _p13._0},
+										_1: {ctor: '[]'}
+									})
+							};
+						}
+					}),
+				{
+					dict: _elm_lang$core$Dict$empty,
+					redundant: {ctor: '[]'}
+				},
+				tests);
+			return {
+				ctor: '_Tuple2',
+				_0: A2(_elm_lang$core$List$map, _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$error, redundantTests.redundant),
+				_1: ctx
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$Context = function (a) {
+	return {availableTestAliases: a};
+};
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$statementFn,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$expressionFn,
+	moduleEndFn: function (ctx) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	},
+	initialContext: _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$Context(
+		{ctor: '[]'})
+};
+var _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_ElmTest_NoDuplicateTestBodies$implementation);
+};

@@ -6,8 +6,15 @@ cd graphql
 elm-lint init
 time elm-lint | grep "SimplifyPiping"
 
-time ~/rooibos-future/main -d . -filter .erl -templates ~/rooibos-future/catalogue/elm/elm-lint/simplify-piping/
+mv elm-stuff /tmp # won't count the initial run against elm-lint.
+mv LintConfig.elm /tmp
+
+time ~/rooibos-future/main -d . -filter .elm -templates ~/rooibos-future/catalogue/elm/elm-lint/simplify-piping/pipe-left
 git checkout -- .
+
+mv /tmp/elm-stuff .
+mv /tmp/LintConfig.elm .
+
 cd ..
 
 

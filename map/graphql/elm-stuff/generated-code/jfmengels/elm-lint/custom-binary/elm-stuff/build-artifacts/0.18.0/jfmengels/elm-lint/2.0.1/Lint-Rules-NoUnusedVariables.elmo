@@ -1,0 +1,362 @@
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$getExported = function (exportType) {
+	var _p0 = exportType;
+	switch (_p0.ctor) {
+		case 'AllExport':
+			return _elm_lang$core$Set$empty;
+		case 'SubsetExport':
+			return A3(
+				_elm_lang$core$List$foldl,
+				_elm_lang$core$Set$union,
+				_elm_lang$core$Set$empty,
+				A2(_elm_lang$core$List$map, _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$getExported, _p0._0));
+		case 'FunctionExport':
+			return _elm_lang$core$Set$singleton(_p0._0);
+		default:
+			return _elm_lang$core$Set$singleton(_p0._0);
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$variableName = function (expr) {
+	variableName:
+	while (true) {
+		var _p1 = expr;
+		switch (_p1.ctor) {
+			case 'Variable':
+				return _elm_lang$core$Maybe$Just(_p1._0);
+			case 'Application':
+				var _v2 = _p1._0;
+				expr = _v2;
+				continue variableName;
+			default:
+				return _elm_lang$core$Maybe$Nothing;
+		}
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$createError = function (name) {
+	return A2(
+		_jfmengels$elm_lint$Lint_Types$LintError,
+		'NoUnusedVariables',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Variable `',
+			A2(_elm_lang$core$Basics_ops['++'], name, '` is not used')));
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$makeReport = function (scope) {
+	var _p2 = scope;
+	if (_p2.ctor === 'Nothing') {
+		return A2(
+			_elm_lang$core$Native_Utils.crash(
+				'Lint.Rules.NoUnusedVariables',
+				{
+					start: {line: 102, column: 13},
+					end: {line: 102, column: 24}
+				}),
+			'Unexpected Empty scope stack',
+			{
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: _elm_lang$core$Set$empty
+			});
+	} else {
+		var _p3 = _p2._0;
+		var errors = A2(
+			_elm_lang$core$List$map,
+			_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$createError,
+			_elm_lang$core$List$sort(
+				_elm_lang$core$Set$toList(
+					A2(_elm_lang$core$Set$diff, _p3.declared, _p3.used))));
+		var variablesUsedButNotFromThisScope = A2(_elm_lang$core$Set$diff, _p3.used, _p3.declared);
+		var notUsed = A2(_elm_lang$core$Set$diff, _p3.declared, _p3.used);
+		return {ctor: '_Tuple2', _0: errors, _1: variablesUsedButNotFromThisScope};
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$moduleEndFn = function (ctx) {
+	var _p4 = ctx.exportsEverything ? {
+		ctor: '_Tuple2',
+		_0: {ctor: '[]'},
+		_1: _elm_lang$core$Set$empty
+	} : _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$makeReport(
+		_elm_lang$core$List$head(ctx.scopes));
+	var errors = _p4._0;
+	return {ctor: '_Tuple2', _0: errors, _1: ctx};
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Scope = F2(
+	function (a, b) {
+		return {declared: a, used: b};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$emptyScope = A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Scope, _elm_lang$core$Set$empty, _elm_lang$core$Set$empty);
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addUsedToStack = F2(
+	function (scopes, variables) {
+		var lastScope = function () {
+			var _p5 = _elm_lang$core$List$head(scopes);
+			if (_p5.ctor === 'Nothing') {
+				return A2(
+					_elm_lang$core$Native_Utils.crash(
+						'Lint.Rules.NoUnusedVariables',
+						{
+							start: {line: 76, column: 21},
+							end: {line: 76, column: 32}
+						}),
+					'Unexpected Empty scope stack',
+					_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$emptyScope);
+			} else {
+				var _p6 = _p5._0;
+				return _elm_lang$core$Native_Utils.update(
+					_p6,
+					{
+						used: A2(
+							_elm_lang$core$Set$union,
+							_p6.used,
+							_elm_lang$core$Set$fromList(variables))
+					});
+			}
+		}();
+		return {
+			ctor: '::',
+			_0: lastScope,
+			_1: A2(_elm_lang$core$List$drop, 1, scopes)
+		};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addExposedVariables = F2(
+	function (ctx, exportType) {
+		return _elm_lang$core$Native_Utils.update(
+			ctx,
+			{
+				scopes: A2(
+					_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addUsedToStack,
+					ctx.scopes,
+					_elm_lang$core$Set$toList(
+						_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$getExported(exportType)))
+			});
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addFoundToStack = F2(
+	function (scopes, variables) {
+		var lastScope = function () {
+			var _p7 = _elm_lang$core$List$head(scopes);
+			if (_p7.ctor === 'Nothing') {
+				return A2(
+					_elm_lang$core$Native_Utils.crash(
+						'Lint.Rules.NoUnusedVariables',
+						{
+							start: {line: 90, column: 21},
+							end: {line: 90, column: 32}
+						}),
+					'Unexpected Empty scope stack',
+					_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$emptyScope);
+			} else {
+				var _p8 = _p7._0;
+				return _elm_lang$core$Native_Utils.update(
+					_p8,
+					{
+						declared: A2(
+							_elm_lang$core$Set$union,
+							_p8.declared,
+							_elm_lang$core$Set$fromList(variables))
+					});
+			}
+		}();
+		return {
+			ctor: '::',
+			_0: lastScope,
+			_1: A2(_elm_lang$core$List$drop, 1, scopes)
+		};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$statementFn = F2(
+	function (ctx, node) {
+		var _p9 = node;
+		_v6_6:
+		do {
+			if (_p9.ctor === 'Enter') {
+				switch (_p9._0.ctor) {
+					case 'FunctionDeclaration':
+						return {
+							ctor: '_Tuple2',
+							_0: {ctor: '[]'},
+							_1: _elm_lang$core$Native_Utils.update(
+								ctx,
+								{
+									scopes: A2(
+										_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addFoundToStack,
+										ctx.scopes,
+										{
+											ctor: '::',
+											_0: _p9._0._0,
+											_1: {ctor: '[]'}
+										})
+								})
+						};
+					case 'ImportStatement':
+						if ((_p9._0._2.ctor === 'Just') && (_p9._0._2._0.ctor === 'SubsetExport')) {
+							var variables = A3(
+								_elm_lang$core$List$foldl,
+								F2(
+									function ($var, res) {
+										var _p10 = $var;
+										if (_p10.ctor === 'FunctionExport') {
+											return {ctor: '::', _0: _p10._0, _1: res};
+										} else {
+											return res;
+										}
+									}),
+								{ctor: '[]'},
+								_p9._0._2._0._0);
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: _elm_lang$core$Native_Utils.update(
+									ctx,
+									{
+										scopes: A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addFoundToStack, ctx.scopes, variables)
+									})
+							};
+						} else {
+							break _v6_6;
+						}
+					case 'ModuleDeclaration':
+						if (_p9._0._1.ctor === 'AllExport') {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: _elm_lang$core$Native_Utils.update(
+									ctx,
+									{exportsEverything: true})
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addExposedVariables, ctx, _p9._0._1)
+							};
+						}
+					case 'PortModuleDeclaration':
+						if (_p9._0._1.ctor === 'AllExport') {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: _elm_lang$core$Native_Utils.update(
+									ctx,
+									{exportsEverything: true})
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addExposedVariables, ctx, _p9._0._1)
+							};
+						}
+					default:
+						break _v6_6;
+				}
+			} else {
+				break _v6_6;
+			}
+		} while(false);
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$expressionFn = F2(
+	function (ctx, node) {
+		var _p11 = node;
+		_v8_3:
+		do {
+			if (_p11.ctor === 'Enter') {
+				switch (_p11._0.ctor) {
+					case 'Variable':
+						var _p12 = _p11._0._0;
+						if ((_p12.ctor === '::') && (_p12._1.ctor === '[]')) {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: _elm_lang$core$Native_Utils.update(
+									ctx,
+									{
+										scopes: A2(
+											_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addUsedToStack,
+											ctx.scopes,
+											{
+												ctor: '::',
+												_0: _p12._0,
+												_1: {ctor: '[]'}
+											})
+									})
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: {ctor: '[]'},
+								_1: ctx
+							};
+						}
+					case 'Let':
+						var variables = _elm_lang$core$Set$fromList(
+							_elm_lang$core$List$concat(
+								A2(
+									_elm_lang$core$List$filterMap,
+									_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$variableName,
+									A2(_elm_lang$core$List$map, _elm_lang$core$Tuple$first, _p11._0._0))));
+						var newScope = A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Scope, variables, _elm_lang$core$Set$empty);
+						return {
+							ctor: '_Tuple2',
+							_0: {ctor: '[]'},
+							_1: _elm_lang$core$Native_Utils.update(
+								ctx,
+								{
+									scopes: {ctor: '::', _0: newScope, _1: ctx.scopes}
+								})
+						};
+					default:
+						break _v8_3;
+				}
+			} else {
+				if (_p11._0.ctor === 'Let') {
+					var newScopes = A2(_elm_lang$core$List$drop, 1, ctx.scopes);
+					var _p13 = _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$makeReport(
+						_elm_lang$core$List$head(ctx.scopes));
+					var errors = _p13._0;
+					var variablesUsedButNotFromThisScope = _p13._1;
+					return {
+						ctor: '_Tuple2',
+						_0: errors,
+						_1: _elm_lang$core$Native_Utils.update(
+							ctx,
+							{
+								scopes: A2(
+									_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$addUsedToStack,
+									newScopes,
+									_elm_lang$core$Set$toList(variablesUsedButNotFromThisScope))
+							})
+					};
+				} else {
+					break _v8_3;
+				}
+			}
+		} while(false);
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Context = F2(
+	function (a, b) {
+		return {scopes: a, exportsEverything: b};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$statementFn,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$expressionFn,
+	moduleEndFn: _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$moduleEndFn,
+	initialContext: A2(
+		_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Context,
+		{
+			ctor: '::',
+			_0: A2(_jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$Scope, _elm_lang$core$Set$empty, _elm_lang$core$Set$empty),
+			_1: {ctor: '[]'}
+		},
+		false)
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_NoUnusedVariables$implementation);
+};

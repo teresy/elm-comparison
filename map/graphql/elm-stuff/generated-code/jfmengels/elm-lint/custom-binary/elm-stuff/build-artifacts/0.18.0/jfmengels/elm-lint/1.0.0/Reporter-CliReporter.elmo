@@ -1,0 +1,121 @@
+var _jfmengels$elm_lint$Reporter_CliReporter$summary = function (errors) {
+	var warningCount = A2(_jfmengels$elm_lint$Lint$countErrors, _jfmengels$elm_lint$Lint_Types$Warning, errors);
+	var warningMessage = _elm_lang$core$Native_Utils.eq(warningCount, 0) ? '' : A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(warningCount),
+		' warning(s)');
+	var criticalCount = A2(_jfmengels$elm_lint$Lint$countErrors, _jfmengels$elm_lint$Lint_Types$Critical, errors);
+	var criticalMessage = _elm_lang$core$Native_Utils.eq(criticalCount, 0) ? '' : A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(criticalCount),
+		' critical problem(s)');
+	var tallyMessage = A2(
+		_elm_lang$core$String$join,
+		', ',
+		A2(
+			_elm_lang$core$List$filter,
+			F2(
+				function (x, y) {
+					return !_elm_lang$core$Native_Utils.eq(x, y);
+				})(''),
+			{
+				ctor: '::',
+				_0: criticalMessage,
+				_1: {
+					ctor: '::',
+					_0: warningMessage,
+					_1: {ctor: '[]'}
+				}
+			}));
+	return A2(_elm_lang$core$Basics_ops['++'], tallyMessage, '.');
+};
+var _jfmengels$elm_lint$Reporter_CliReporter$formatSeverity = function (severity) {
+	var _p0 = severity;
+	switch (_p0.ctor) {
+		case 'Disabled':
+			return '(Disabled)';
+		case 'Warning':
+			return '(Warning) ';
+		default:
+			return '(Critical)';
+	}
+};
+var _jfmengels$elm_lint$Reporter_CliReporter$maxSeverityLength = A2(
+	_elm_lang$core$Maybe$withDefault,
+	0,
+	_elm_lang$core$List$maximum(
+		A2(
+			_elm_lang$core$List$map,
+			function (_p1) {
+				return _elm_lang$core$String$length(
+					_jfmengels$elm_lint$Reporter_CliReporter$formatSeverity(_p1));
+			},
+			{
+				ctor: '::',
+				_0: _jfmengels$elm_lint$Lint_Types$Disabled,
+				_1: {
+					ctor: '::',
+					_0: _jfmengels$elm_lint$Lint_Types$Warning,
+					_1: {
+						ctor: '::',
+						_0: _jfmengels$elm_lint$Lint_Types$Critical,
+						_1: {ctor: '[]'}
+					}
+				}
+			})));
+var _jfmengels$elm_lint$Reporter_CliReporter$formatReportForFile = function (_p2) {
+	var _p3 = _p2;
+	var _p6 = _p3._1;
+	var formattedErrors = A2(
+		_elm_lang$core$List$map,
+		function (_p4) {
+			var _p5 = _p4;
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				A3(
+					_elm_lang$core$String$pad,
+					_jfmengels$elm_lint$Reporter_CliReporter$maxSeverityLength,
+					_elm_lang$core$Native_Utils.chr(' '),
+					_jfmengels$elm_lint$Reporter_CliReporter$formatSeverity(_p5._0)),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					' ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p5._1.rule,
+						A2(_elm_lang$core$Basics_ops['++'], ': ', _p5._1.message))));
+		},
+		_p6);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(
+			_elm_lang$core$List$length(_p6)),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' errors found in \'',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_p3._0.filename,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'\':\n\n\t',
+					A2(_elm_lang$core$String$join, '\n\t', formattedErrors)))));
+};
+var _jfmengels$elm_lint$Reporter_CliReporter$formatReport = function (errors) {
+	var _p7 = _elm_lang$core$List$isEmpty(errors);
+	if (_p7 === true) {
+		return 'No linting errors.';
+	} else {
+		var fileReports = A2(
+			_elm_lang$core$String$join,
+			'\n\n',
+			A2(_elm_lang$core$List$map, _jfmengels$elm_lint$Reporter_CliReporter$formatReportForFile, errors));
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			fileReports,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\n\n',
+				_jfmengels$elm_lint$Reporter_CliReporter$summary(errors)));
+	}
+};

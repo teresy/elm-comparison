@@ -1,0 +1,73 @@
+var _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$createError = function (name) {
+	return A2(
+		_jfmengels$elm_lint$Lint_Types$LintError,
+		'NoUnannotatedFunction',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'`',
+			A2(_elm_lang$core$Basics_ops['++'], name, '` does not have a type declaration')));
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$statementFn = F2(
+	function (ctx, node) {
+		var _p0 = node;
+		_v0_2:
+		do {
+			if (_p0.ctor === 'Enter') {
+				switch (_p0._0.ctor) {
+					case 'FunctionTypeDeclaration':
+						return {
+							ctor: '_Tuple2',
+							_0: {ctor: '[]'},
+							_1: _elm_lang$core$Native_Utils.update(
+								ctx,
+								{
+									annotatedFunctions: A2(_elm_lang$core$Set$insert, _p0._0._0, ctx.annotatedFunctions)
+								})
+						};
+					case 'FunctionDeclaration':
+						var _p1 = _p0._0._0;
+						return A2(_elm_lang$core$Set$member, _p1, ctx.annotatedFunctions) ? {
+							ctor: '_Tuple2',
+							_0: {ctor: '[]'},
+							_1: ctx
+						} : {
+							ctor: '_Tuple2',
+							_0: {
+								ctor: '::',
+								_0: _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$createError(_p1),
+								_1: {ctor: '[]'}
+							},
+							_1: ctx
+						};
+					default:
+						break _v0_2;
+				}
+			} else {
+				break _v0_2;
+			}
+		} while(false);
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$Context = function (a) {
+	return {annotatedFunctions: a};
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$statementFn,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint$doNothing,
+	moduleEndFn: function (ctx) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	},
+	initialContext: _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$Context(_elm_lang$core$Set$empty)
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_NoUnannotatedFunction$implementation);
+};

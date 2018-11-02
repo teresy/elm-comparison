@@ -1,0 +1,57 @@
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$statementFn = F2(
+	function (ctx, node) {
+		var _p0 = node;
+		if ((_p0.ctor === 'Enter') && (_p0._0.ctor === 'ImportStatement')) {
+			var name = A2(_elm_lang$core$String$join, '.', _p0._0._0);
+			return A2(_elm_lang$core$Set$member, name, ctx.imports) ? {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: _elm_lang$core$Native_Utils.update(
+					ctx,
+					{
+						duplicates: A2(_elm_lang$core$Set$insert, name, ctx.duplicates)
+					})
+			} : {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: _elm_lang$core$Native_Utils.update(
+					ctx,
+					{
+						imports: A2(_elm_lang$core$Set$insert, name, ctx.imports)
+					})
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$error = function (name) {
+	return A2(
+		_jfmengels$elm_lint$Lint_Types$LintError,
+		'NoDuplicateImports',
+		A2(_elm_lang$core$Basics_ops['++'], name, ' was imported several times'));
+};
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$moduleEndFn = function (ctx) {
+	var errors = A2(
+		_elm_lang$core$List$map,
+		_jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$error,
+		_elm_lang$core$Set$toList(ctx.duplicates));
+	return {ctor: '_Tuple2', _0: errors, _1: ctx};
+};
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$Context = F2(
+	function (a, b) {
+		return {imports: a, duplicates: b};
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$statementFn,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint$doNothing,
+	moduleEndFn: _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$moduleEndFn,
+	initialContext: A2(_jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$Context, _elm_lang$core$Set$empty, _elm_lang$core$Set$empty)
+};
+var _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_NoDuplicateImports$implementation);
+};

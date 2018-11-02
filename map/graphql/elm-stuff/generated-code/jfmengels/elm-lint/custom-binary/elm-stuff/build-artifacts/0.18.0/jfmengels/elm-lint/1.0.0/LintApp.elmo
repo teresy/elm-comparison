@@ -1,0 +1,97 @@
+var _jfmengels$elm_lint$LintApp$enabledRules = A2(
+	_elm_lang$core$List$filter,
+	function (_p0) {
+		return A2(
+			F2(
+				function (x, y) {
+					return !_elm_lang$core$Native_Utils.eq(x, y);
+				}),
+			_jfmengels$elm_lint$Lint_Types$Disabled,
+			_elm_lang$core$Tuple$first(_p0));
+	},
+	_jfmengels$elm_lint$LintConfig$config);
+var _jfmengels$elm_lint$LintApp$lint = function (source) {
+	return function (result) {
+		var _p1 = result;
+		if (_p1.ctor === 'Err') {
+			return {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: _jfmengels$elm_lint$Lint_Types$Critical,
+					_1: {
+						rule: 'Parsing error',
+						message: A2(_elm_lang$core$String$join, '\n', _p1._0)
+					}
+				},
+				_1: {ctor: '[]'}
+			};
+		} else {
+			return _p1._0;
+		}
+	}(
+		A2(_jfmengels$elm_lint$Lint$lintSource, _jfmengels$elm_lint$LintApp$enabledRules, source));
+};
+var _jfmengels$elm_lint$LintApp$linting = _elm_lang$core$Native_Platform.incomingPort(
+	'linting',
+	_elm_lang$core$Json_Decode$list(
+		A2(
+			_elm_lang$core$Json_Decode$andThen,
+			function (filename) {
+				return A2(
+					_elm_lang$core$Json_Decode$andThen,
+					function (source) {
+						return _elm_lang$core$Json_Decode$succeed(
+							{filename: filename, source: source});
+					},
+					A2(_elm_lang$core$Json_Decode$field, 'source', _elm_lang$core$Json_Decode$string));
+			},
+			A2(_elm_lang$core$Json_Decode$field, 'filename', _elm_lang$core$Json_Decode$string))));
+var _jfmengels$elm_lint$LintApp$resultPort = _elm_lang$core$Native_Platform.outgoingPort(
+	'resultPort',
+	function (v) {
+		return {success: v.success, report: v.report};
+	});
+var _jfmengels$elm_lint$LintApp$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		var errors = A2(
+			_elm_lang$core$List$filter,
+			function (_p3) {
+				return !_elm_lang$core$List$isEmpty(
+					_elm_lang$core$Tuple$second(_p3));
+			},
+			A2(
+				_elm_lang$core$List$map,
+				function (file) {
+					return {
+						ctor: '_Tuple2',
+						_0: file,
+						_1: _jfmengels$elm_lint$LintApp$lint(file.source)
+					};
+				},
+				_p2._0));
+		var success = _elm_lang$core$Native_Utils.eq(
+			A2(_jfmengels$elm_lint$Lint$countErrors, _jfmengels$elm_lint$Lint_Types$Critical, errors),
+			0);
+		var report = _jfmengels$elm_lint$Reporter_CliReporter$formatReport(errors);
+		return {
+			ctor: '_Tuple2',
+			_0: model,
+			_1: _jfmengels$elm_lint$LintApp$resultPort(
+				{success: success, report: report})
+		};
+	});
+var _jfmengels$elm_lint$LintApp$Model = {};
+var _jfmengels$elm_lint$LintApp$Lint = function (a) {
+	return {ctor: 'Lint', _0: a};
+};
+var _jfmengels$elm_lint$LintApp$subscriptions = function (model) {
+	return _jfmengels$elm_lint$LintApp$linting(_jfmengels$elm_lint$LintApp$Lint);
+};
+var _jfmengels$elm_lint$LintApp$main = _elm_lang$core$Platform$program(
+	{
+		init: {ctor: '_Tuple2', _0: _jfmengels$elm_lint$LintApp$Model, _1: _elm_lang$core$Platform_Cmd$none},
+		update: _jfmengels$elm_lint$LintApp$update,
+		subscriptions: _jfmengels$elm_lint$LintApp$subscriptions
+	})();

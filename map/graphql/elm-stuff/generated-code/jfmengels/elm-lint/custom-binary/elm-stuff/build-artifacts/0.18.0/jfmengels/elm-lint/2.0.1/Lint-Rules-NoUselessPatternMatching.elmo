@@ -1,0 +1,219 @@
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternBody = function (_p0) {
+	var _p1 = _p0;
+	return _p1._1;
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$usesIntroducedVariable = function (_p2) {
+	var _p3 = _p2;
+	return function (set) {
+		return _elm_lang$core$Native_Utils.cmp(
+			_elm_lang$core$Set$size(set),
+			0) > 0;
+	}(
+		A2(_elm_lang$core$Set$intersect, _p3._2, _p3._3));
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternsAreAllTheSame = function (patterns) {
+	var bodiesAreIdentical = function (set) {
+		return _elm_lang$core$Native_Utils.eq(
+			_elm_lang$core$Set$size(set),
+			1);
+	}(
+		_elm_lang$core$Set$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				function (_p4) {
+					var _p5 = _p4;
+					return _elm_lang$core$Basics$toString(_p5._1);
+				},
+				patterns)));
+	var anyUseVariables = A2(_elm_lang$core$List$any, _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$usesIntroducedVariable, patterns);
+	return (!anyUseVariables) && bodiesAreIdentical;
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$isVariable = _elm_lang$core$Regex$contains(
+	_elm_lang$core$Regex$regex('^[_a-z][\\w\\d]*$'));
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$defaultPattern = function (patterns) {
+	return A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (_p6, res) {
+				var _p7 = _p6;
+				var _p10 = _p7._0;
+				var _p8 = res;
+				if (_p8.ctor === 'Just') {
+					return res;
+				} else {
+					var _p9 = _p10;
+					if (_p9.ctor === 'Variable') {
+						return _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$isVariable(
+							A2(_elm_lang$core$String$join, '.', _p9._0)) ? _elm_lang$core$Maybe$Just(
+							{ctor: '_Tuple4', _0: _p10, _1: _p7._1, _2: _p7._2, _3: _p7._3}) : _elm_lang$core$Maybe$Nothing;
+					} else {
+						return _elm_lang$core$Maybe$Nothing;
+					}
+				}
+			}),
+		_elm_lang$core$Maybe$Nothing,
+		patterns);
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$thereAreUselessPatterns = function (patterns) {
+	var $default = _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$defaultPattern(patterns);
+	var hasDefault = function () {
+		var _p11 = $default;
+		if (_p11.ctor === 'Nothing') {
+			return false;
+		} else {
+			return true;
+		}
+	}();
+	var justDefault = A2(
+		_elm_lang$core$Maybe$withDefault,
+		{
+			ctor: '_Tuple4',
+			_0: _Bogdanp$elm_ast$Ast_Expression$Integer(1),
+			_1: _Bogdanp$elm_ast$Ast_Expression$Integer(1),
+			_2: _elm_lang$core$Set$empty,
+			_3: _elm_lang$core$Set$empty
+		},
+		$default);
+	return hasDefault && A3(
+		_elm_lang$core$List$foldl,
+		F2(
+			function (pattern, res) {
+				return res || ((!_elm_lang$core$Native_Utils.eq(pattern, justDefault)) && (_elm_lang$core$Native_Utils.eq(
+					_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternBody(pattern),
+					_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternBody(justDefault)) && (!_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$usesIntroducedVariable(pattern))));
+			}),
+		false,
+		patterns);
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$subPatternMatchingVariables = function (pattern) {
+	var _p12 = pattern;
+	switch (_p12.ctor) {
+		case 'Variable':
+			return {
+				ctor: '::',
+				_0: A2(_elm_lang$core$String$join, '.', _p12._0),
+				_1: {ctor: '[]'}
+			};
+		case 'Application':
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$subPatternMatchingVariables(_p12._0),
+				_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$subPatternMatchingVariables(_p12._1));
+		default:
+			return {ctor: '[]'};
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternMatchingVariables = function (pattern) {
+	var _p13 = pattern;
+	if (_p13.ctor === 'Application') {
+		return A2(
+			_elm_lang$core$Set$filter,
+			_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$isVariable,
+			_elm_lang$core$Set$fromList(
+				_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$subPatternMatchingVariables(pattern)));
+	} else {
+		return _elm_lang$core$Set$empty;
+	}
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$baseError = _jfmengels$elm_lint$Lint_Types$LintError('NoUselessPatternMatching');
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$uselessPatternMatchingError = _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$baseError('Useless case expression: It will always evaluate to the same value');
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$uselessPatternError = _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$baseError('Useless patterns: Some will always evaluate to the same value as the default pattern');
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$findVariable = F2(
+	function (foundVariables, node) {
+		var _p14 = node;
+		if ((_p14.ctor === 'Enter') && (_p14._0.ctor === 'Variable')) {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: A2(
+					_elm_lang$core$Set$insert,
+					A2(_elm_lang$core$String$join, '.', _p14._0._0),
+					foundVariables)
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: foundVariables
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$variableFinder = {
+	statementFn: _jfmengels$elm_lint$Lint$doNothing,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$findVariable,
+	moduleEndFn: function (ctx) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	},
+	initialContext: _elm_lang$core$Set$empty
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$expressionFn = F2(
+	function (ctx, node) {
+		var _p15 = node;
+		if ((_p15.ctor === 'Enter') && (_p15._0.ctor === 'Case')) {
+			var analyzedPatterns = A2(
+				_elm_lang$core$List$map,
+				function (_p16) {
+					var _p17 = _p16;
+					var _p19 = _p17._0;
+					var _p18 = _p17._1;
+					return {
+						ctor: '_Tuple4',
+						_0: _p19,
+						_1: _p18,
+						_2: _elm_lang$core$Tuple$second(
+							A2(_jfmengels$elm_lint$Lint$visitExpression, _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$variableFinder, _p18)),
+						_3: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternMatchingVariables(_p19)
+					};
+				},
+				_p15._0._1);
+			return _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$patternsAreAllTheSame(analyzedPatterns) ? {
+				ctor: '_Tuple2',
+				_0: {
+					ctor: '::',
+					_0: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$uselessPatternMatchingError,
+					_1: {ctor: '[]'}
+				},
+				_1: ctx
+			} : (_jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$thereAreUselessPatterns(analyzedPatterns) ? {
+				ctor: '_Tuple2',
+				_0: {
+					ctor: '::',
+					_0: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$uselessPatternError,
+					_1: {ctor: '[]'}
+				},
+				_1: ctx
+			} : {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			});
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: ctx
+			};
+		}
+	});
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$Context = {};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$implementation = {
+	statementFn: _jfmengels$elm_lint$Lint$doNothing,
+	typeFn: _jfmengels$elm_lint$Lint$doNothing,
+	expressionFn: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$expressionFn,
+	moduleEndFn: function (ctx) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: ctx
+		};
+	},
+	initialContext: _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$Context
+};
+var _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$rule = function (input) {
+	return A2(_jfmengels$elm_lint$Lint$lint, input, _jfmengels$elm_lint$Lint_Rules_NoUselessPatternMatching$implementation);
+};
